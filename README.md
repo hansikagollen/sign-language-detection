@@ -21,6 +21,7 @@ It combines **OpenCV** for image capture and a **deep learning model** (CNN) tra
    cd sign-language-detection
 
 2.Create a virtual environment
+
 python -m venv venv
 source venv/bin/activate   # on Linux/Mac
 venv\Scripts\activate      # on Windows
