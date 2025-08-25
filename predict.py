@@ -4,26 +4,16 @@ from tensorflow.keras.models import load_model
 import os
 from collections import deque
 
-# ----------------------------
-# Load trained model
-# ----------------------------
 MODEL_PATH = "asl_mobilenet_model.h5"
 model = load_model(MODEL_PATH)
 
-# ----------------------------
-# Config
-# ----------------------------
 IMG_SIZE = (224, 224)
-DATA_DIR = "my_webcam_data"  # folder containing class subfolders: A, B, C, etc.
-CONFIDENCE_THRESHOLD = 0.6   # below this, show "Unknown"
-FRAME_SMOOTH = 5             # number of frames to smooth predictions
+DATA_DIR = "my_webcam_data"  
+CONFIDENCE_THRESHOLD = 0.6   
+FRAME_SMOOTH = 5             
 
-# Get class labels
-class_labels = sorted(os.listdir(DATA_DIR))  # e.g., ['A', 'B', 'C', ...]
+class_labels = sorted(os.listdir(DATA_DIR))  
 
-# ----------------------------
-# Image prediction
-# ----------------------------
 def predict_image(image_path):
     img = cv2.imread(image_path)
     if img is None:
@@ -39,9 +29,6 @@ def predict_image(image_path):
     print(f"Predicted: {label} ({confidence*100:.2f}%)")
     return label, confidence
 
-# ----------------------------
-# Webcam prediction with smoothing
-# ----------------------------
 def predict_webcam():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -57,7 +44,6 @@ def predict_webcam():
         if not ret:
             break
 
-        # Define ROI (adjust coordinates if needed)
         x, y, w, h = 200, 100, 300, 300
         roi = frame[y:y+h, x:x+w]
 
@@ -66,7 +52,7 @@ def predict_webcam():
 
         if roi.size != 0:
             frame_count += 1
-            if frame_count % 3 == 0:  # predict every 3 frames
+            if frame_count % 3 == 0:  
                 img = cv2.resize(roi, IMG_SIZE)
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 img = img.astype("float32") / 255.0
@@ -75,13 +61,11 @@ def predict_webcam():
                 preds = model.predict(img, verbose=0)
                 prediction_queue.append(preds[0])
 
-            # Average predictions over last N frames
             if prediction_queue:
                 avg_preds = np.mean(prediction_queue, axis=0)
                 confidence = np.max(avg_preds)
                 label = class_labels[np.argmax(avg_preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
 
-        # Draw rectangle and label
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.putText(
             frame,
@@ -102,9 +86,6 @@ def predict_webcam():
     cap.release()
     cv2.destroyAllWindows()
 
-# ----------------------------
-# Main
-# ----------------------------
 if __name__ == "__main__":
     mode = input("Enter 'i' for image or 'w' for webcam: ").strip().lower()
     if mode == "i":

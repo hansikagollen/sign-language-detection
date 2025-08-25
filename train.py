@@ -5,13 +5,11 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.optimizers import Adam
 
-# Paths
-DATA_DIR = 'my_webcam_data'  # dataset folder from your capture script
+DATA_DIR = 'my_webcam_data'  
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 16
 EPOCHS = 15
 
-# Data augmentation and validation split
 datagen = ImageDataGenerator(
     rescale=1./255,
     validation_split=0.2,
@@ -36,7 +34,6 @@ validation_generator = datagen.flow_from_directory(
     subset='validation'
 )
 
-# Load MobileNetV2
 base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=IMG_SIZE + (3,))
 for layer in base_model.layers:
     layer.trainable = False
@@ -49,13 +46,11 @@ predictions = Dense(train_generator.num_classes, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 model.compile(optimizer=Adam(1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
 
-# Train
 model.fit(
     train_generator,
     validation_data=validation_generator,
     epochs=EPOCHS
 )
 
-# Save model
 model.save('asl_mobilenet_model.h5')
 print("Model saved as asl_mobilenet_model.h5")
