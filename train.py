@@ -117,8 +117,7 @@ model.fit(
     validation_data=validation_generator,
     epochs=EPOCHS_FULL,
     callbacks=[checkpoint, early_stop, lr_reduction]
-    epochs=EPOCHS_FULL,
-    callbacks=[checkpoint, early_stop, lr_reduction]
+    epochs=EPOCHS_FULL
 )
 
 model.save('asl_model2.h5')
