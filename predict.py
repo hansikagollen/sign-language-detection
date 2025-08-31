@@ -1,75 +1,111 @@
+import os
+import os
 import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
-import os
 from collections import deque
+from collections import deque
+from tensorflow.keras.models import load_model
+import mediapipe as mp
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
-MODEL_PATH = "asl_mobilenet_model.h5"
-model = load_model(MODEL_PATH)
+# -------------------- Suppress TF and MP logs --------------------
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+# -------------------- Config --------------------
+MODEL_PATH = "asl_model2.h5"
+# -------------------- Config --------------------
+MODEL_PATH = "asl_model2.h5"
 IMG_SIZE = (224, 224)
-DATA_DIR = "my_webcam_data"  
-CONFIDENCE_THRESHOLD = 0.6   
-FRAME_SMOOTH = 5             
+DATA_DIR = "my_webcam_data"
+CONFIDENCE_THRESHOLD = 0.1
+FRAME_SMOOTH = 8  # number of frames to average predictions
 
-class_labels = sorted(os.listdir(DATA_DIR))  
+# -------------------- Load model --------------------
+try:
+    model = load_model(MODEL_PATH)
+    print("Model loaded successfully")
+    model.summary()
+except Exception as e:
+    print(f"Error loading model: {e}")
+    exit(1)
 
-def predict_image(image_path):
-    img = cv2.imread(image_path)
-    if img is None:
-        print("Image not found:", image_path)
-        return
-    img = cv2.resize(img, IMG_SIZE)
-    img = img.astype("float32") / 255.0
-    img = np.expand_dims(img, axis=0)
-    
-    preds = model.predict(img, verbose=0)
-    confidence = np.max(preds)
-    label = class_labels[np.argmax(preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
-    print(f"Predicted: {label} ({confidence*100:.2f}%)")
-    return label, confidence
+class_labels = sorted(os.listdir(DATA_DIR))
+print(f"Class labels: {class_labels}")
 
+# -------------------- MediaPipe setup --------------------
+mp_hands = mp.solutions.hands
+mp_drawing = mp.solutions.drawing_utils
+hands = mp_hands.Hands(
+    static_image_mode=False,
+    max_num_hands=1,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
+
+# -------------------- Webcam & prediction --------------------
 def predict_webcam():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot open webcam")
         return
-    
-    print("Press 'q' to quit")
-    frame_count = 0
+
+
     prediction_queue = deque(maxlen=FRAME_SMOOTH)
+    print("Press 'q' to quit")
+    print("Press 'q' to quit")
 
     while True:
         ret, frame = cap.read()
         if not ret:
+            print("Failed to grab frame")
+            print("Failed to grab frame")
             break
 
-        x, y, w, h = 200, 100, 300, 300
-        roi = frame[y:y+h, x:x+w]
+        frame = cv2.flip(frame, 1)
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = hands.process(rgb)
 
-        label = "..."
-        confidence = 0.0
+        label, confidence = "Unknown", 0.0
 
-        if roi.size != 0:
-            frame_count += 1
-            if frame_count % 3 == 0:  
-                img = cv2.resize(roi, IMG_SIZE)
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                img = img.astype("float32") / 255.0
-                img = np.expand_dims(img, axis=0)
-                
-                preds = model.predict(img, verbose=0)
-                prediction_queue.append(preds[0])
+        if results.multi_hand_landmarks:
+            for hand_landmarks in results.multi_hand_landmarks:
+                h, w, _ = frame.shape
+                x_min = int(min([lm.x for lm in hand_landmarks.landmark]) * w)
+                y_min = int(min([lm.y for lm in hand_landmarks.landmark]) * h)
+                x_max = int(max([lm.x for lm in hand_landmarks.landmark]) * w)
+                y_max = int(max([lm.y for lm in hand_landmarks.landmark]) * h)
 
-            if prediction_queue:
-                avg_preds = np.mean(prediction_queue, axis=0)
-                confidence = np.max(avg_preds)
-                label = class_labels[np.argmax(avg_preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
+                margin = 20
+                x_min, y_min = max(0, x_min - margin), max(0, y_min - margin)
+                x_max, y_max = min(w, x_max + margin), min(h, y_max + margin)
 
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                roi = frame[y_min:y_max, x_min:x_max]
+                if roi.size != 0:
+                    img = cv2.resize(roi, IMG_SIZE)
+                    img = preprocess_input(img.astype("float32"))
+                    img = np.expand_dims(img, axis=0)
+
+                    preds = model.predict(img, verbose=0)[0]
+                    prediction_queue.append(preds)
+
+                mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+        # ----------- Smooth predictions -----------
+        if len(prediction_queue) == FRAME_SMOOTH:
+            weights = np.linspace(1, 2, len(prediction_queue))
+            avg_preds = np.average(prediction_queue, axis=0, weights=weights)
+            confidence = np.max(avg_preds)
+            label = class_labels[np.argmax(avg_preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
+        elif prediction_queue:
+            last_preds = prediction_queue[-1]
+            confidence = np.max(last_preds)
+            label = class_labels[np.argmax(last_preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
+
+        # Display label & confidence
         cv2.putText(
             frame,
-            f"{label}: {confidence*100:.2f}%" if label != "..." else "...",
+            f"{label}: {confidence*100:.2f}%",
+            f"{label}: {confidence*100:.2f}%",
             (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
             1,
@@ -77,21 +113,19 @@ def predict_webcam():
             2
         )
 
-        cv2.imshow("ASL Prediction", frame)
+        cv2.imshow("ASL Ensemble Prediction", frame)
 
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
+    hands.close()
+
+    hands.close()
+
 
 if __name__ == "__main__":
-    mode = input("Enter 'i' for image or 'w' for webcam: ").strip().lower()
-    if mode == "i":
-        path = input("Enter image path: ").strip()
-        predict_image(path)
-    elif mode == "w":
-        predict_webcam()
-    else:
-        print("Invalid option")
+    predict_webcam()
+    predict_webcam()
