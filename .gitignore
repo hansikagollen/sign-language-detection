@@ -141,6 +141,8 @@ Thumbs.db
 *.pb
 *.onnx
 *.tflite
+
+
 my_webcam_data/
 
 # Large files (>50MB typically)

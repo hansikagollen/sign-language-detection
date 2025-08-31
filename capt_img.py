@@ -31,8 +31,6 @@ mp_draw = mp.solutions.drawing_utils
 
 count = 0
 print("Press 'q' to stop...")
-count = 0
-print("Press 'q' to stop...")
 
 while True:
     ret, frame = cap.read()
