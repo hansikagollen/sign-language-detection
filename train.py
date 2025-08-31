@@ -1,9 +1,8 @@
 import os
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.applications import MobileNetV2, EfficientNetB0
+from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, BatchNormalization
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import Dropout
@@ -122,7 +121,5 @@ model.fit(
     callbacks=[checkpoint, early_stop, lr_reduction]
 )
 
-model.save('asl_model2.h5')
-print("Model saved as asl_model2.h5")
 model.save('asl_model2.h5')
 print("Model saved as asl_model2.h5")

@@ -1,8 +1,6 @@
 import os
-import os
 import cv2
 import numpy as np
-from collections import deque
 from collections import deque
 from tensorflow.keras.models import load_model
 import mediapipe as mp
@@ -11,8 +9,6 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 # -------------------- Suppress TF and MP logs --------------------
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# -------------------- Config --------------------
-MODEL_PATH = "asl_model2.h5"
 # -------------------- Config --------------------
 MODEL_PATH = "asl_model2.h5"
 IMG_SIZE = (224, 224)
@@ -105,7 +101,6 @@ def predict_webcam():
         cv2.putText(
             frame,
             f"{label}: {confidence*100:.2f}%",
-            f"{label}: {confidence*100:.2f}%",
             (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
             1,
@@ -116,16 +111,12 @@ def predict_webcam():
         cv2.imshow("ASL Ensemble Prediction", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
     hands.close()
 
-    hands.close()
-
 
 if __name__ == "__main__":
-    predict_webcam()
     predict_webcam()
