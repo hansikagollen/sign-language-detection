@@ -52,10 +52,12 @@ def predict_webcam():
 
     prediction_queue = deque(maxlen=FRAME_SMOOTH)
     print("Press 'q' to quit")
+    print("Press 'q' to quit")
 
     while True:
         ret, frame = cap.read()
         if not ret:
+            print("Failed to grab frame")
             print("Failed to grab frame")
             break
 
@@ -103,6 +105,7 @@ def predict_webcam():
         cv2.putText(
             frame,
             f"{label}: {confidence*100:.2f}%",
+            f"{label}: {confidence*100:.2f}%",
             (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
             1,
@@ -112,6 +115,7 @@ def predict_webcam():
 
         cv2.imshow("ASL Ensemble Prediction", frame)
 
+        if cv2.waitKey(1) & 0xFF == ord('q'):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -123,4 +127,5 @@ def predict_webcam():
 
 
 if __name__ == "__main__":
+    predict_webcam()
     predict_webcam()
