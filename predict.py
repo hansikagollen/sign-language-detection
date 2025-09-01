@@ -6,17 +6,14 @@ from tensorflow.keras.models import load_model
 import mediapipe as mp
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
-# -------------------- Suppress TF and MP logs --------------------
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# -------------------- Config --------------------
 MODEL_PATH = "asl_model2.h5"
 IMG_SIZE = (224, 224)
 DATA_DIR = "my_webcam_data"
 CONFIDENCE_THRESHOLD = 0.1
-FRAME_SMOOTH = 8  # number of frames to average predictions
+FRAME_SMOOTH = 8  
 
-# -------------------- Load model --------------------
 try:
     model = load_model(MODEL_PATH)
     print("Model loaded successfully")
@@ -27,8 +24,6 @@ except Exception as e:
 
 class_labels = sorted(os.listdir(DATA_DIR))
 print(f"Class labels: {class_labels}")
-
-# -------------------- MediaPipe setup --------------------
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(
@@ -38,7 +33,6 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.5
 )
 
-# -------------------- Webcam & prediction --------------------
 def predict_webcam():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -86,7 +80,6 @@ def predict_webcam():
 
                 mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-        # ----------- Smooth predictions -----------
         if len(prediction_queue) == FRAME_SMOOTH:
             weights = np.linspace(1, 2, len(prediction_queue))
             avg_preds = np.average(prediction_queue, axis=0, weights=weights)
@@ -97,7 +90,6 @@ def predict_webcam():
             confidence = np.max(last_preds)
             label = class_labels[np.argmax(last_preds)] if confidence >= CONFIDENCE_THRESHOLD else "Unknown"
 
-        # Display label & confidence
         cv2.putText(
             frame,
             f"{label}: {confidence*100:.2f}%",
