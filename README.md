@@ -1,33 +1,47 @@
-# 🖐️ Sign Language Detection with OpenCV & Deep Learning
+# 🖐️ Sign Language Detection using Deep Learning  
 
-This project detects **hand gestures / sign language alphabets** in real-time using your webcam.  
-It combines **OpenCV** for image capture and a **deep learning model** (CNN) trained on sign language images.
-
----
-
-## 📌 Features
-- 📷 Real-time webcam hand gesture recognition  
-- 🔤 Predicts alphabets (A–Z, numbers, or gestures like 👍 depending on dataset)  
-- 🧠 Uses a trained deep learning model (`model.h5`)  
-- 💻 Simple to run on any machine with Python & OpenCV  
+This project implements **American Sign Language (ASL) recognition** using **TensorFlow/Keras** with **MobileNetV2** as the backbone.  
+It can be trained on custom-collected images (via webcam or dataset) and then used for real-time predictions.  
 
 ---
 
-## 🚀 Installation
+## 📌 Features  
+- Deep learning-based gesture recognition.  
+- Transfer learning with **MobileNetV2**.  
+- Data augmentation with Keras `ImageDataGenerator`.  
+- Handles class imbalance using `class_weight`.  
+- Three-phase training:  
+  1. Train classifier head.  
+  2. Fine-tune last layers.  
+  3. Fine-tune full backbone.  
+- Saves the **best model** automatically (`best_asl_model.h5`).  
 
-1. Clone this repository:
+---
+
+
+---
+
+## ⚙️ Installation  
+
+1. Clone the repository:  
    ```bash
-   git clone https://github.com/yourusername/sign-language-detection.git
-   cd sign-language-detection
+   git clone https://github.com/your-username/sign-language-detection-1.git
+   cd sign-language-detection-1
 
-2.Create a virtual environment
+py -3.11 -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
 
-python -m venv venv
-source venv/bin/activate   # on Linux/Mac
-venv\Scripts\activate      # on Windows
+##Dataset
+my_webcam_data/
+├── A/
+│   ├── img1.jpg
+│   ├── img2.jpg
+│   └── ...
+├── B/
+├── C/
+└── ...
 
-3.pip install -r requirements.txt
+python train.py
 
-Run:python predict.py
-
-
+python predict.py
