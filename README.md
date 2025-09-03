@@ -28,20 +28,4 @@ It can be trained on custom-collected images (via webcam or dataset) and then us
    git clone https://github.com/your-username/sign-language-detection-1.git
    cd sign-language-detection-1
 
-py -3.11 -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
 
-##Dataset
-my_webcam_data/
-├── A/
-│   ├── img1.jpg
-│   ├── img2.jpg
-│   └── ...
-├── B/
-├── C/
-└── ...
-
-python train.py
-
-python predict.py
