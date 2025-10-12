@@ -16,12 +16,17 @@ pipeline {
         }
 
         stage('Setup Python') {
-            steps {
-                bat 'python -m venv %VENV%'
-                bat 'call %VENV%\\Scripts\\activate && python -m pip install --upgrade pip'
-                bat 'call %VENV%\\Scripts\\activate && pip install -r requirements.txt'
-            }
-        }
+    steps {
+        bat '''
+        python -m venv venv
+        call venv\\Scripts\\activate
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -r requirements.txt
+        pip install mediapipe==0.10.13.0
+        '''
+    }
+}
+
 
         stage('Train Model') {
             steps {
