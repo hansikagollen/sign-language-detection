@@ -1,0 +1,35 @@
+pipeline {
+    agent { label 'slave1' }
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/hansikagollen/sign-language-detection.git'
+            }
+        }
+        stage('Setup Python') {
+            steps {
+                bat '''
+                python -m venv venv
+                call venv\\Scripts\\activate
+                python -m pip install --upgrade pip
+                pip install tensorflow==2.20.0 opencv-python numpy scikit-learn mediapipe==0.10.13
+                '''
+            }
+        }
+        stage('Train Model') {
+            steps {
+                bat 'call venv\\Scripts\\activate && python train.py'
+            }
+        }
+        stage('Run Prediction') {
+            steps {
+                bat 'call venv\\Scripts\\activate && python predict.py'
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline finished!'
+        }
+    }
+}
