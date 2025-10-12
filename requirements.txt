@@ -1,7 +1,7 @@
-tensorflow==2.20.0
+tensorflow==2.14.0
 opencv-python
 numpy
 scikit-learn
-mediapipe
+mediapipe==0.10.13
 # any other libraries your scripts need
 
