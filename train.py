@@ -77,7 +77,7 @@ checkpoint = ModelCheckpoint('best_asl_model.h5', monitor='val_loss', save_best_
 early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 lr_reduction = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3)
 
-print("\n🔹 Stage 1: Training head only")
+print("\n Stage 1: Training head only")
 model.compile(optimizer=Adam(1e-3), loss=CategoricalCrossentropy(label_smoothing=0.05), metrics=['accuracy'])
 model.fit(
     train_generator,
@@ -87,7 +87,7 @@ model.fit(
     class_weight=class_weights
 )
 
-print("\n🔹 Stage 2: Fine-tuning layers")
+print("\n Stage 2: Fine-tuning layers")
 for layer in base_model.layers[-75:]:
     layer.trainable = True
 model.compile(optimizer=Adam(1e-4), loss=CategoricalCrossentropy(label_smoothing=0.05), metrics=['accuracy'])
@@ -99,7 +99,7 @@ model.fit(
     class_weight=class_weights
 )
 
-print("\n🔹 Stage 3: Fine-tuning full backbone")
+print("\n Stage 3: Fine-tuning full backbone")
 early_stop = EarlyStopping(monitor='val_loss', patience=7, restore_best_weights=True)
 for layer in base_model.layers:
     layer.trainable = True
@@ -112,4 +112,4 @@ model.fit(
 )
 
 model.save('asl_model2.h5')
-print("✅ Model saved as asl_model2.h5")
+print(" Model saved as asl_model2.h5")
