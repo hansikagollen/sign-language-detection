@@ -1,35 +1,54 @@
 pipeline {
-    agent any
+    agent any  // run on any available node (master or slave)
+
+    environment {
+        PYTHON_ENV = "venv"
+    }
+
     stages {
-        stage('Checkout') {
+
+        stage('Checkout SCM') {
             steps {
-                git 'https://github.com/hansikagollen/sign-language-detection.git'
+                // Checkout main branch from GitHub
+                checkout([$class: 'GitSCM', 
+                          branches: [[name: '*/main']], 
+                          userRemoteConfigs: [[url: 'https://github.com/hansikagollen/sign-language-detection']]])
             }
         }
+
         stage('Setup Python') {
             steps {
-                bat '''
-                python -m venv venv
-                call venv\\Scripts\\activate
-                python -m pip install --upgrade pip
-                pip install tensorflow==2.20.0 opencv-python numpy scikit-learn mediapipe==0.10.13
-                '''
+                bat """
+                python -m venv %PYTHON_ENV%
+                call %PYTHON_ENV%\\Scripts\\activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                """
             }
         }
+
         stage('Train Model') {
             steps {
-                bat 'call venv\\Scripts\\activate && python train.py'
+                bat "call %PYTHON_ENV%\\Scripts\\activate && python train.py"
             }
         }
+
         stage('Run Prediction') {
             steps {
-                bat 'call venv\\Scripts\\activate && python predict.py'
+                bat "call %PYTHON_ENV%\\Scripts\\activate && python predict.py"
             }
         }
     }
+
     post {
         always {
-            echo 'Pipeline finished!'
+            echo "Pipeline finished!"
+        }
+        success {
+            echo "Build succeeded."
+        }
+        failure {
+            echo "Build failed. Check logs."
         }
     }
 }
