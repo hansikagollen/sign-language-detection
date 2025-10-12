@@ -1,58 +1,52 @@
 pipeline {
     agent any
 
-    environment {
-        VENV = "venv"
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git(
-                    url: 'https://github.com/hansikagollen/sign-language-detection.git',
-                    branch: 'main'
-                )
+                git branch: 'main', url: 'https://github.com/hansikagollen/sign-language-detection'
             }
         }
 
         stage('Setup Python') {
-    steps {
-        bat '''
-        python -m venv venv
-        call venv\\Scripts\\activate
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt
-        pip install mediapipe==0.10.13.0
-        '''
-    }
-}
+            steps {
+                bat """
+                REM Create virtual environment with Python 3.10
+                D:\\python-3.10.1-amd64.exe -m venv venv
 
+                REM Activate virtual environment and upgrade pip
+                call venv\\Scripts\\activate
+                python -m pip install --upgrade pip
+
+                REM Install required packages
+                pip install -r requirements.txt
+                pip install mediapipe==0.10.13.0
+                """
+            }
+        }
 
         stage('Train Model') {
             steps {
-                bat 'call %VENV%\\Scripts\\activate && python train.py'
+                bat """
+                call venv\\Scripts\\activate
+                python train.py
+                """
             }
         }
 
         stage('Run Prediction') {
             steps {
-                bat 'call %VENV%\\Scripts\\activate && python predict.py'
+                bat """
+                call venv\\Scripts\\activate
+                python predict.py
+                """
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: 'asl_model2.h5', allowEmptyArchive: true
             echo 'Pipeline finished. Check console logs for details.'
-        }
-
-        failure {
-            echo 'Build failed. Check logs.'
-        }
-
-        success {
-            echo 'Build succeeded!'
         }
     }
 }
