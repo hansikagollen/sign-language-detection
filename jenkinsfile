@@ -1,54 +1,53 @@
 pipeline {
-    agent any  // run on any available node (master or slave)
+    agent any
 
     environment {
-        PYTHON_ENV = "venv"
+        VENV = "venv"
     }
 
     stages {
-
-        stage('Checkout SCM') {
+        stage('Checkout') {
             steps {
-                // Checkout main branch from GitHub
-                checkout([$class: 'GitSCM', 
-                          branches: [[name: '*/main']], 
-                          userRemoteConfigs: [[url: 'https://github.com/hansikagollen/sign-language-detection']]])
+                git(
+                    url: 'https://github.com/hansikagollen/sign-language-detection.git',
+                    branch: 'main'
+                )
             }
         }
 
         stage('Setup Python') {
             steps {
-                bat """
-                python -m venv %PYTHON_ENV%
-                call %PYTHON_ENV%\\Scripts\\activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                """
+                bat 'python -m venv %VENV%'
+                bat 'call %VENV%\\Scripts\\activate && python -m pip install --upgrade pip'
+                bat 'call %VENV%\\Scripts\\activate && pip install -r requirements.txt'
             }
         }
 
         stage('Train Model') {
             steps {
-                bat "call %PYTHON_ENV%\\Scripts\\activate && python train.py"
+                bat 'call %VENV%\\Scripts\\activate && python train.py'
             }
         }
 
         stage('Run Prediction') {
             steps {
-                bat "call %PYTHON_ENV%\\Scripts\\activate && python predict.py"
+                bat 'call %VENV%\\Scripts\\activate && python predict.py'
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline finished!"
+            archiveArtifacts artifacts: 'asl_model2.h5', allowEmptyArchive: true
+            echo 'Pipeline finished. Check console logs for details.'
         }
-        success {
-            echo "Build succeeded."
-        }
+
         failure {
-            echo "Build failed. Check logs."
+            echo 'Build failed. Check logs.'
+        }
+
+        success {
+            echo 'Build succeeded!'
         }
     }
 }
