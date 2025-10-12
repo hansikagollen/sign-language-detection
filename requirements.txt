@@ -2,4 +2,5 @@ tensorflow==2.20.0
 opencv-python
 numpy
 scikit-learn
-mediapipe
+mediapipe==0.10.13.0
+
