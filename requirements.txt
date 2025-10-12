@@ -3,4 +3,3 @@ opencv-python
 numpy
 scikit-learn
 mediapipe==0.10.13.0
-
