@@ -2,5 +2,7 @@ tensorflow==2.14.0
 opencv-python
 numpy
 scikit-learn
+mediapipe
+protobuf
 # any other libraries your scripts need
 
