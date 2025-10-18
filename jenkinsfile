@@ -1,26 +1,25 @@
 pipeline {
     agent any
 
+    // 🕒 Schedule: runs daily at 2 AM
+    triggers {
+        cron('H 2 * * *')
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/hansikagollen/sign-language-detection'
+                git branch: 'emt', url: 'https://github.com/hansikagollen/sign-language-detection.git'
             }
         }
 
         stage('Setup Python') {
             steps {
                 bat """
-                REM Create virtual environment with Python 3.10
-                D:\\python-3.10.1-amd64.exe -m venv venv
-
-                REM Activate virtual environment and upgrade pip
-                call venv\\Scripts\\activate
+                python -m venv sld
+                call sld\\Scripts\\activate
                 python -m pip install --upgrade pip
-
-                REM Install required packages
                 pip install -r requirements.txt
-                pip install mediapipe==0.10.13.0
                 """
             }
         }
@@ -28,17 +27,17 @@ pipeline {
         stage('Train Model') {
             steps {
                 bat """
-                call venv\\Scripts\\activate
+                call sld\\Scripts\\activate
                 python train.py
                 """
             }
         }
 
-        stage('Run Prediction') {
+        stage('Test Model Loading') {
             steps {
                 bat """
-                call venv\\Scripts\\activate
-                python predict.py
+                call sld\\Scripts\\activate
+                python -c "from tensorflow.keras.models import load_model; model = load_model('asl_model2.h5'); print('Model loaded successfully'); print(model.summary())"
                 """
             }
         }
@@ -46,7 +45,11 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished. Check console logs for details.'
+            archiveArtifacts artifacts: '*.h5', allowEmptyArchive: true
+            echo '✅ Pipeline finished. Check console logs and artifacts for details.'
+        }
+        failure {
+            echo '❌ Pipeline failed. Check logs for errors.'
         }
     }
 }

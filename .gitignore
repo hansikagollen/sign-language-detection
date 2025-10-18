@@ -165,3 +165,5 @@ logs/
 # Secrets
 secrets.json
 config.json
+
+sld
