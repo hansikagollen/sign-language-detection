@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+my_webcam_data/
+*.png
+ASL_model.h5
