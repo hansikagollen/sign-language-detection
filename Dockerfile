@@ -11,7 +11,10 @@ WORKDIR /app
 
 # Copy requirements and install Python packages
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install dependencies with fixed numpy version
+RUN pip install --no-cache-dir "numpy<2.0" && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy your app code
 COPY . .
