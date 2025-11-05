@@ -1,9 +1,8 @@
-tensorflow==2.14.0
+tensorflow==2.16.1
 opencv-python
-numpy
+numpy<2.0
 scikit-learn
 mediapipe
 protobuf
-numpy<2.0
 # any other libraries your scripts need
 
