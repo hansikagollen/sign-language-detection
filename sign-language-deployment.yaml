@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: sign-language-container
-        image: hansikagollen/sign-language:latest
+        image: image: madhulika0860/sign-language-detection:latest
         ports:
         - containerPort: 5000
 ---
