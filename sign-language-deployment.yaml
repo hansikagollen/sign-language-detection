@@ -13,10 +13,10 @@ spec:
         app: sign-language
     spec:
       containers:
-      - name: sign-language-container
-        image: image: madhulika0860/sign-language-detection:latest
-        ports:
-        - containerPort: 5000
+        - name: sign-language-container
+          image: madhulika0860/sign-language-detection:latest
+          ports:
+            - containerPort: 5000
 ---
 apiVersion: v1
 kind: Service
@@ -27,6 +27,6 @@ spec:
   selector:
     app: sign-language
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 5000
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
