@@ -1,18 +1,21 @@
-# Use slim Python image
 FROM python:3.9-slim
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
 WORKDIR /app
 
-# Copy only requirements first (faster caching)
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip
+# Copy requirements and install Python packages
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy only necessary scripts
-COPY *.py /app/
+# Copy your app code
+COPY . .
 
-# Expose port (if using web interface)
+# Expose port and start app
 EXPOSE 5000
-
-# Run your main script
 CMD ["python", "predict.py"]
