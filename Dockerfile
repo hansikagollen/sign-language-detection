@@ -1,24 +1,26 @@
-FROM python:3.9-slim
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+# Use prebuilt TensorFlow image with Python 3.9
+FROM tensorflow/tensorflow:2.13.0
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install Python packages
+# Install system dependencies required for OpenCV
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy Python dependency file
 COPY requirements.txt .
 
-# Install dependencies with fixed numpy version
-RUN pip install --no-cache-dir "numpy<2.0" && \
-    pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your app code
+# Copy the rest of the app source code
 COPY . .
 
-# Expose port and start app
+# Expose the port your app will use
 EXPOSE 5000
+
+# Start the app
 CMD ["python", "predict.py"]
