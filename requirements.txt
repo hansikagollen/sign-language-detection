@@ -4,5 +4,6 @@ numpy
 scikit-learn
 mediapipe
 protobuf
+numpy<2.0
 # any other libraries your scripts need
 
