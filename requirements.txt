@@ -5,4 +5,7 @@ scikit-learn
 mediapipe
 protobuf
 # any other libraries your scripts need
-
+opencv-python-headless
+numpy
+tensorflow
+flask
