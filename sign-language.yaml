@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sign-language-deployment
-  labels:
-    app: sign-language
 spec:
   replicas: 1
   selector:
@@ -15,7 +13,7 @@ spec:
         app: sign-language
     spec:
       containers:
-      - name: sign-language
+      - name: sign-language-container
         image: hansikagollen/sign-language:latest
         ports:
         - containerPort: 5000
@@ -25,10 +23,10 @@ kind: Service
 metadata:
   name: sign-language-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: sign-language
   ports:
-  - port: 5000
+  - protocol: TCP
+    port: 80
     targetPort: 5000
-    nodePort: 30002
